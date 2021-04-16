@@ -1,0 +1,8 @@
+pandas
+numpy
+more-itertools
+xlrd
+openpyxl
+Pillow
+pybase64
+streamlit
