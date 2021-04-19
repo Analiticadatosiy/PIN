@@ -7,8 +7,8 @@ from PIL import Image
 import base64
 
 st.title("Optimización PIN - Incolmotos Yamaha")
-img = Image.open("logo.png")
-st.sidebar.image(img, width=250)
+#img = Image.open("logo.png")
+#st.sidebar.image(img, width=250)
 
 st.sidebar.subheader("Parámetros")
 trm = st.sidebar.number_input('TRM', value=3650)
