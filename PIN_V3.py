@@ -183,6 +183,7 @@ if data_file is not None and ejecucion is not None :
     
     #df_final.drop(['Herramentales_sinFormato', 'PIN_sin_formato', 'Ahorro_sinformato'], axis=1, inplace=True)
     #graph = px.scatter(df_final, x="Ahorro_sinformato", y="Herramentales_sinFormato", hover_name='Mezcla', size=(df_final['PIN_sin_formato']**2))
+    """
     graph = px.scatter(df_final, x="Inversion etapa", y="PIN", hover_name='Mezcla', size="Ahorro etapa")
     graph.update_layout(
     title_text='Soluciones', # title of plot
@@ -190,6 +191,7 @@ if data_file is not None and ejecucion is not None :
     bargroupgap=0.1, # gap between bars of the same location coordinates
     showlegend = True)
     st.plotly_chart(graph)
+    """
 
     fig = px.scatter(df_final,
                 x='Inversion etapa',
