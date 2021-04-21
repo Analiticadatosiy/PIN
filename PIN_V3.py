@@ -8,8 +8,8 @@ import base64
 import plotly.express as px
 
 st.title("Optimización PIN - Incolmotos Yamaha")
-img = Image.open("logo.png")
-st.sidebar.image(img, width=250)
+#img = Image.open("logo.png")
+#st.sidebar.image(img, width=250)
 
 st.sidebar.subheader("Parámetros")
 trm = st.sidebar.number_input('TRM', value=3650)
