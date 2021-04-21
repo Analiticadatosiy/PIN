@@ -5,10 +5,11 @@ from itertools import product
 import streamlit as st
 from PIL import Image
 import base64
+import plotly.express as px
 
 st.title("Optimización PIN - Incolmotos Yamaha")
-#img = Image.open("logo.png")
-#st.sidebar.image(img, width=250)
+img = Image.open("logo.png")
+st.sidebar.image(img, width=250)
 
 st.sidebar.subheader("Parámetros")
 trm = st.sidebar.number_input('TRM', value=3650)
@@ -25,6 +26,7 @@ herramentales_fijos= st.sidebar.number_input('Inversión herramentales etapas an
 # integracion_mes = 265267.5813
 # herramentales_fijos = 534950956
 # ckd_fijo = 443483.772675727
+
 
 data_file=st.file_uploader('Archivo',type=['xlsx'])
 ejecucion=st.button('Ejecutar')
@@ -88,6 +90,7 @@ if data_file is not None and ejecucion is not None :
     vector_pin=[]
 
     for l in lista:
+        PIN=0
         sum_precio_local = []
         combinacion = np.array(l)
         comb_precio = combinacion * Precio_local
@@ -136,25 +139,65 @@ if data_file is not None and ejecucion is not None :
         # print(Total)
         # print(Nal)
 
-        Inversion = (sum_herramentales) + herramentales_fijos
+        Inversion_total = (sum_herramentales) + herramentales_fijos
         CKD_Tot = sum_ckd + ckd_fijo
-        Local = sum_local + sum(Valor_unitario)
-        Dif = CKD_Tot - Local
+        Local_Tot = sum_local + local_entrada
+        Ahorro_Total = CKD_Tot - Local_Tot
         Val = (sum_herramentales) / PIN / 100
-        id=''.join(str(e) for e in combinacion)
-        #vector_pin.append([str(id), PIN,(sum_herramentales),Val, Dif])
-        vector_pin.append([str(id), PIN, ("{:.2%}".format(PIN)), sum_herramentales, ("${:,.0f}".format(sum_herramentales)),
-            ("${:,.0f}".format(Val)), ("${:,.0f}".format(Dif))])
-        #print(vector_pin)"${:,.2f}
+        Ahorro_etapa=sum_ckd - sum_local
+
+
+
         
-
-
-    df_final = pd.DataFrame(vector_pin,columns=['Mezcla', 'PIN_sin_formato','PIN','Herramentales_sinFormato', 'Herramentales','$Por%','DifCKD'])
+        referencias=[]
+        count_id=0
+        index_solution=[]
+        for i in combinacion:
+            if i==1:
+               index_solution.append(count_id)
+            count_id=count_id+1
+        #st.table(df_p.iloc[index_solution].assign(hack='').set_index('hack'))
+        referencias.append(df_p.iloc[index_solution]['Nombre_pieza'].values)
+        list1=list(referencias[0])
+        values = " / ".join(str(v) for v in list1)
+                
+        id=''.join(str(e) for e in combinacion)
+        #vector_pin.append([str(id), round(PIN,4)*100, ("{:.2%}".format(PIN)), round(sum_herramentales,0), ("${:,.0f}".format(sum_herramentales)),
+        #    ("${:,.0f}".format(Val)), round(Ahorro_Total,0), ("${:,.0f}".format(Ahorro_Total)),values, Ahorro_etapa])
+        PIN=round(PIN*100,2)
+        vector_pin.append([str(id), PIN, int(sum_herramentales), int(Ahorro_etapa), int(Val), int(Inversion_total),
+                            int(Ahorro_Total), values])
+        #vector_pin.append([str(id), PIN, int(format(sum_herramentales,',.0f')), int(format(Ahorro_etapa,',.0f')), int(format(Val,',.0f')), 
+        #    int(format(Inversion_total,',.0f')), int(format(Ahorro_Total,',.0f')), values])
+        
+            
+    #df_final = pd.DataFrame(vector_pin,columns=['Mezcla', 'PIN_sin_formato','PIN','Herramentales_sinFormato',
+    #                                            'Inversión herr_etapa','$ Por punto %PIN','Ahorro_sinformato',
+    #                                            'Ahorro','Piezas a integrar'])
+    df_final = pd.DataFrame(vector_pin,columns=['Mezcla','PIN','Inversion etapa','Ahorro etapa','$ Por punto %PIN','Inversion total acum',
+                                                'Ahorro total acum','Piezas a integrar'])
     df_final['Mezcla']=df_final['Mezcla'].apply(str)
     #df_final=df_final[df_final['PIN']>0.1777]
     #df_final=df_final.sort_values(by='$Por%', ascending='True')
-    df_final = df_final.sort_values(by=['Herramentales_sinFormato', 'PIN_sin_formato'], ascending=[True, False])
-    df_final.drop(['Herramentales_sinFormato', 'PIN_sin_formato'], axis=1, inplace=True)
+    df_final = df_final.sort_values(by=['Inversion etapa', 'PIN', 'Ahorro etapa'], ascending=[True, False, False])
+    
+    #df_final.drop(['Herramentales_sinFormato', 'PIN_sin_formato', 'Ahorro_sinformato'], axis=1, inplace=True)
+    #graph = px.scatter(df_final, x="Ahorro_sinformato", y="Herramentales_sinFormato", hover_name='Mezcla', size=(df_final['PIN_sin_formato']**2))
+    graph = px.scatter(df_final, x="Inversion etapa", y="PIN", hover_name='Mezcla', size="Ahorro etapa")
+    graph.update_layout(
+    title_text='Soluciones', # title of plot
+    bargap=0.1, # gap between bars of adjacent location coordinates
+    bargroupgap=0.1, # gap between bars of the same location coordinates
+    showlegend = True)
+    st.plotly_chart(graph)
+
+    fig = px.scatter(df_final,
+                x='Inversion etapa',
+                y='PIN',
+                hover_name='Mezcla',
+                title=f'PIN vs. Inversión')
+
+    st.plotly_chart(fig)
     #print(df_final)
     #df_final.to_csv('resultados.csv', sep=";", decimal=',', index=False)
     #df_final.to_excel('resultados.xlsx', index=False)
@@ -181,7 +224,7 @@ if data_file is not None and ejecucion is not None :
         #st.table(df_p.iloc[index_solution])
         st.table(df_p.iloc[index_solution].assign(hack='').set_index('hack'))
         #st.dataframe(df_p.iloc[index_solution].assign(hack='').set_index('hack'))
-        st.write(df_final.loc[soluciones[j]])
+        st.write(df_final.loc[soluciones[j]].drop(['Mezcla']))
         
     st.markdown("La ejecución **finalizó**")
 
@@ -199,9 +242,3 @@ if data_file is not None and ejecucion is not None :
     b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
     href = f'<a href="data:file/csv;base64,{b64}">Download CSV File</a> (right-click and save as &lt;some_name&gt;.csv)'
     st.markdown(href, unsafe_allow_html=True)
-
-    
-
-
-
-

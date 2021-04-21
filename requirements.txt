@@ -6,3 +6,4 @@ openpyxl
 Pillow
 pybase64
 streamlit
+plotly-express
