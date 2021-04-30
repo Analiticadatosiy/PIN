@@ -6,6 +6,7 @@ import streamlit as st
 from PIL import Image
 import base64
 import plotly.express as px
+from datetime import datetime
 
 st.title("Optimización PIN - Incolmotos Yamaha")
 #img = Image.open("logo.png")
@@ -165,7 +166,7 @@ if data_file is not None and ejecucion is not None :
         #vector_pin.append([str(id), round(PIN,4)*100, ("{:.2%}".format(PIN)), round(sum_herramentales,0), ("${:,.0f}".format(sum_herramentales)),
         #    ("${:,.0f}".format(Val)), round(Ahorro_Total,0), ("${:,.0f}".format(Ahorro_Total)),values, Ahorro_etapa])
         PIN=round(PIN*100,2)
-        vector_pin.append([str(id), PIN, int(sum_herramentales), int(Ahorro_etapa), int(Val), int(Inversion_total),
+        vector_pin.append([("'"+str(id)), PIN, int(sum_herramentales), int(Ahorro_etapa), int(Val), int(Inversion_total),
                             int(Ahorro_Total), values])
         #vector_pin.append([str(id), PIN, int(format(sum_herramentales,',.0f')), int(format(Ahorro_etapa,',.0f')), int(format(Val,',.0f')), 
         #    int(format(Inversion_total,',.0f')), int(format(Ahorro_Total,',.0f')), values])
@@ -176,22 +177,27 @@ if data_file is not None and ejecucion is not None :
     #                                            'Ahorro','Piezas a integrar'])
     df_final = pd.DataFrame(vector_pin,columns=['Mezcla','PIN','Inversion etapa','Ahorro etapa','$ Por punto %PIN','Inversion total acum',
                                                 'Ahorro total acum','Piezas a integrar'])
-    df_final['Mezcla']=df_final['Mezcla'].apply(str)
+    df_final['Mezcla']=df_final['Mezcla'].apply(str)    
     #df_final=df_final[df_final['PIN']>0.1777]
     #df_final=df_final.sort_values(by='$Por%', ascending='True')
     df_final = df_final.sort_values(by=['Inversion etapa', 'PIN', 'Ahorro etapa'], ascending=[True, False, False])
     
     #df_final.drop(['Herramentales_sinFormato', 'PIN_sin_formato', 'Ahorro_sinformato'], axis=1, inplace=True)
-    #graph = px.scatter(df_final, x="Ahorro_sinformato", y="Herramentales_sinFormato", hover_name='Mezcla', size=(df_final['PIN_sin_formato']**2))
-    """
-    graph = px.scatter(df_final, x="Inversion etapa", y="PIN", hover_name='Mezcla', size="Ahorro etapa")
-    graph.update_layout(
-    title_text='Soluciones', # title of plot
-    bargap=0.1, # gap between bars of adjacent location coordinates
-    bargroupgap=0.1, # gap between bars of the same location coordinates
-    showlegend = True)
-    st.plotly_chart(graph)
-    """
+    
+    
+    
+    try:
+        graph = px.scatter(df_final, x="Inversion etapa", y="PIN", hover_name='Mezcla', size="Ahorro etapa")
+        graph.update_layout(
+        title_text='Soluciones', # title of plot
+        bargap=0.1, # gap between bars of adjacent location coordinates
+        bargroupgap=0.1, # gap between bars of the same location coordinates
+        showlegend = True)
+        st.plotly_chart(graph)
+    
+    except:
+        st.write('Todas o algunas soluciones tienen ahorros negativos')
+
 
     fig = px.scatter(df_final,
                 x='Inversion etapa',
@@ -200,9 +206,6 @@ if data_file is not None and ejecucion is not None :
                 title=f'PIN vs. Inversión')
 
     st.plotly_chart(fig)
-    #print(df_final)
-    #df_final.to_csv('resultados.csv', sep=";", decimal=',', index=False)
-    #df_final.to_excel('resultados.xlsx', index=False)
     soluciones=df_final.head(15).index
    
 
